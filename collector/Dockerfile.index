@@ -1,0 +1,4 @@
+FROM python:3.11-slim
+RUN pip install --no-cache-dir requests websockets
+COPY index_collector.py /app/index_collector.py
+CMD ["python", "-u", "/app/index_collector.py"]

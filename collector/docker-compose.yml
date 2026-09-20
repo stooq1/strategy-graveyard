@@ -1,0 +1,59 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_USER: collector
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-change_me}
+    volumes:
+      - ch_data:/var/lib/clickhouse
+    # порт наружу не открываем — доступ через docker exec или ssh-туннель
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "-q", "SELECT 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  collector:
+    build: .
+    environment:
+      # спектр по ликвидности: топ (btc,eth) -> крупный альт (sol) ->
+      # средний (link,ltc) -> ниже среднего (atom). Гипотеза: край плит
+      # растёт при снижении ликвидности (меньше HFT, выше неэффективность).
+      SYMBOLS: "btcusdt,ethusdt,solusdt,linkusdt,ltcusdt,atomusdt"
+      CH_URL: "http://collector:${CLICKHOUSE_PASSWORD:-change_me}@clickhouse:8123"
+      SNAPSHOT_MS: "1000"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Котировки US-индексов «с крипты»: токенизированные SPY/QQQ (xStocks) на
+  # Kraken/Bybit/Gate по публичным websocket + эталон Yahoo + Pyth (если есть
+  # ключ). Проводники для проверки «S&P -> BTC/ETH» тем же способом, что
+  # S&P -> RI в архиве 2020. Отдельный Dockerfile: пересборка не трогает collector.
+  # Разведка источников с сервера:  docker compose run --rm index_collector python /app/index_collector.py --probe
+  index_collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.index
+    environment:
+      INDEX_SOURCES: "kraken,gate,yahoo,hermes"
+      KRAKEN_SYMBOLS: "SPYx/USD,QQQx/USD,BTC/USD,ETH/USD"
+      BYBIT_SYMBOLS: "SPYXUSDT,QQQXUSDT,BTCUSDT"
+      GATE_SYMBOLS: "SPYX_USDT,QQQX_USDT,BTC_USDT"
+      YAHOO_SYMBOLS: "SPY,QQQ"
+      YAHOO_POLL_SEC: "30"
+      HERMES_SYMBOLS: "Equity.US.SPY/USD,Equity.US.QQQ/USD,Crypto.BTC/USD,Crypto.ETH/USD"
+      HERMES_API_KEY: ""
+      CH_URL: "http://collector:${CLICKHOUSE_PASSWORD:-change_me}@clickhouse:8123"
+      FLUSH_SEC: "2"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  ch_data:
