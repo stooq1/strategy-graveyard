@@ -1,0 +1,175 @@
+{
+  "title": "Стакан: плиты и цена (FORTS 2020)",
+  "uid": "orderbook-walls",
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "refresh": "",
+  "time": { "from": "2020-06-01T06:00:00Z", "to": "2020-06-01T18:00:00Z" },
+  "templating": {
+    "list": [
+      {
+        "name": "code",
+        "label": "Контракт",
+        "type": "query",
+        "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+        "query": "SELECT DISTINCT code FROM quik.glass WHERE event_date IN ('2020-03-10','2020-06-01','2020-08-03') ORDER BY code",
+        "refresh": 1,
+        "current": { "text": "SiM0", "value": "SiM0" }
+      },
+      {
+        "name": "min_qty",
+        "label": "Мин. объём плиты",
+        "type": "custom",
+        "query": "1,100,500,1000,2000,5000",
+        "current": { "text": "500", "value": "500" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Цена $code и крупнейшие плиты (зелёная — бид, красная — оффер)",
+      "type": "timeseries",
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 11 },
+      "fieldConfig": {
+        "defaults": { "custom": { "lineWidth": 1, "fillOpacity": 0, "spanNulls": false, "insertNulls": 120000 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "bid_wall" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } },
+              { "id": "custom.drawStyle", "value": "points" },
+              { "id": "custom.pointSize", "value": 3 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "offer_wall" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } },
+              { "id": "custom.drawStyle", "value": "points" },
+              { "id": "custom.pointSize", "value": 3 }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+          "editorType": "sql",
+          "format": 0,
+          "rawSql": "SELECT toStartOfMinute(datetime) AS time, avg(price) AS price FROM quik.anonymous_transactions WHERE code = '${code}' AND $__timeFilter(datetime) GROUP BY time ORDER BY time"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+          "editorType": "sql",
+          "format": 0,
+          "rawSql": "SELECT toStartOfMinute(datetime) AS time, argMax(price, quantity) AS bid_wall FROM quik.glass WHERE code = '${code}' AND type = 'BID' AND quantity >= ${min_qty} AND $__timeFilter(datetime) GROUP BY time ORDER BY time"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+          "editorType": "sql",
+          "format": 0,
+          "rawSql": "SELECT toStartOfMinute(datetime) AS time, argMax(price, quantity) AS offer_wall FROM quik.glass WHERE code = '${code}' AND type = 'OFFER' AND quantity >= ${min_qty} AND $__timeFilter(datetime) GROUP BY time ORDER BY time"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Расстояние от цены до ближайшей крупной плиты (пунктов)",
+      "type": "timeseries",
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+      "gridPos": { "x": 0, "y": 11, "w": 12, "h": 11 },
+      "fieldConfig": {
+        "defaults": { "custom": { "lineWidth": 1, "fillOpacity": 10, "insertNulls": 120000 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "to_offer" },
+            "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } } ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "to_bid" },
+            "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } } ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+          "editorType": "sql",
+          "format": 0,
+          "rawSql": "SELECT p.t AS time, nullIf(o.wall, 0) - p.price AS to_offer, p.price - nullIf(b.wall, 0) AS to_bid FROM (SELECT toStartOfMinute(datetime) AS t, avg(price) AS price FROM quik.anonymous_transactions WHERE code = '${code}' AND $__timeFilter(datetime) GROUP BY t) AS p LEFT JOIN (SELECT toStartOfMinute(datetime) AS t, argMax(price, quantity) AS wall FROM quik.glass WHERE code = '${code}' AND type = 'BID' AND quantity >= ${min_qty} AND $__timeFilter(datetime) GROUP BY t) AS b ON b.t = p.t LEFT JOIN (SELECT toStartOfMinute(datetime) AS t, argMax(price, quantity) AS wall FROM quik.glass WHERE code = '${code}' AND type = 'OFFER' AND quantity >= ${min_qty} AND $__timeFilter(datetime) GROUP BY t) AS o ON o.t = p.t ORDER BY time"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Объём крупнейшей плиты в стакане (лотов)",
+      "type": "timeseries",
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+      "gridPos": { "x": 12, "y": 11, "w": 12, "h": 11 },
+      "fieldConfig": {
+        "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 60, "insertNulls": 120000 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "bid_max" },
+            "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } } ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "offer_max" },
+            "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } } ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+          "editorType": "sql",
+          "format": 0,
+          "rawSql": "SELECT toStartOfMinute(datetime) AS time, maxIf(quantity, type = 'BID') AS bid_max, maxIf(quantity, type = 'OFFER') AS offer_max FROM quik.glass WHERE code = '${code}' AND $__timeFilter(datetime) GROUP BY time ORDER BY time"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Топ-плит за выбранный период (макс. объём на уровне)",
+      "type": "table",
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+      "gridPos": { "x": 0, "y": 22, "w": 12, "h": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+          "editorType": "sql",
+          "format": 1,
+          "rawSql": "SELECT type AS side, price, max(quantity) AS max_qty, count() AS snapshots FROM quik.glass WHERE code = '${code}' AND $__timeFilter(datetime) GROUP BY side, price ORDER BY max_qty DESC LIMIT 20"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Дисбаланс стакана: сумма бидов / сумма офферов",
+      "type": "timeseries",
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+      "gridPos": { "x": 12, "y": 22, "w": 12, "h": 9 },
+      "fieldConfig": {
+        "defaults": { "custom": { "lineWidth": 1, "fillOpacity": 20 } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "grafana-clickhouse-datasource", "uid": "trading-clickhouse" },
+          "editorType": "sql",
+          "format": 0,
+          "rawSql": "SELECT toStartOfMinute(datetime) AS time, sumIf(quantity, type = 'BID') / sumIf(quantity, type = 'OFFER') AS bid_offer_ratio FROM quik.glass WHERE code = '${code}' AND $__timeFilter(datetime) GROUP BY time ORDER BY time"
+        }
+      ]
+    }
+  ]
+}
