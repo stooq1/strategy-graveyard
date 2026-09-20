@@ -1,0 +1,2 @@
+n_symbols,total_trades,portfolio_oos_return_%,portfolio_oos_sharpe,portfolio_oos_max_dd_%,symbols_sharpe>0,median_symbol_sharpe,period
+12,139,-3.7028919148991313,-3.198956543112649,-4.7882289075836475,5,-1.0290138674805942,2025-03-05–2026-05-14
