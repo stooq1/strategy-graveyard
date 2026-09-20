@@ -1,0 +1,24 @@
+# data — large, licensed, or reproducible from the fetchers
+stooq_data/
+clickhouse-data/
+clickhouse-data-backup/
+cache/
+crypto_data/
+moex_data/
+.dukascopy/
+*.pkl
+*.db
+*.db-journal
+
+# run artefacts (curated copies live in results/)
+*.log
+trend_daily_equity.csv
+/*.csv
+
+# environment
+.venv/
+.idea/
+__pycache__/
+*.pyc
+.DS_Store
+.env
