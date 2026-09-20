@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+  - name: TradingClickHouse
+    uid: trading-clickhouse
+    type: grafana-clickhouse-datasource
+    access: proxy
+    jsonData:
+      host: clickhouse
+      port: 9000
+      protocol: native
+      username: default
+    secureJsonData:
+      password: ""

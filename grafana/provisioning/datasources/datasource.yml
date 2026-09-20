@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: TradingMySQL
+    uid: trading-mysql
+    type: mysql
+    access: proxy
+    url: mysql:3306
+    database: trading_analyzer
+    user: trading
+    isDefault: true
+    secureJsonData:
+      # set GRAFANA_MYSQL_PASSWORD to the MYSQL_PASSWORD from docker-compose.yml
+      password: ${GRAFANA_MYSQL_PASSWORD}
+    jsonData:
+      maxOpenConns: 5
