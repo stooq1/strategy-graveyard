@@ -12,7 +12,7 @@ moex_data/
 
 # run artefacts (curated copies live in results/)
 *.log
-trend_daily_equity.csv
+/trend_daily_equity.csv
 /*.csv
 
 # environment

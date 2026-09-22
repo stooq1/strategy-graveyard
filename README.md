@@ -22,7 +22,7 @@ The one-line summary: **at the one-minute horizon on liquid instruments, the rat
 | Own-momentum control: leader = target | same | RI ← RI gives +2.2 bp (k=2); Si ← Si gives 0.0 | half of the RI "conductor effect" was RI's own momentum | mandatory control before crediting any leader |
 | **Conductors S&P / Nasdaq / Brent / USD-CNH → USD/RUB and RTS futures, 2023–2026** | MOEX ISS 1-min (170k minutes) + Dukascopy | lead triage (β, lagged correlations), event study by quarter, tail test | USD/CNH → Si is the cleanest lag structure of the project (β +0.31, corr 0.047 → 0.019 → 0.011 → 0.005 forward, 0 backward) and pays **+0.4 bp (t 2.2) vs 0.5 bp round trip**; sign flips by quarter; top-5 days = 80% | information exists, magnitude is 3–10× below costs; the tail hypothesis (edge only on big days) is rejected: 2026 "big days" are 17× smaller than 2020's |
 | Intraday **S&P → BTC** via tokenized SPY (Kraken/Gate xStocks) | own index collector, 9 days | event study, US session vs off-session, reverse causality control | +3.7 bp (t 1.3) in session, 0 off-session, no reverse effect; BTC↔SPY correlation lives entirely at lag 0 (0.40) | below the 8 bp taker round trip by construction; and the effect is intra-minute |
-| **Trend following on dailies** (time-series momentum, vol-targeted, weekly rebalance) | Binance perps 2020–2026 with funding; stooq 2017–2026; all 9 liquid FORTS families 2019–2026 | pre-declared rule; window map 30–300 on both markets; costs stressed up to ×50; top-5 days cut from the benchmark as well; a pass/fail threshold for the crypto re-test written down before it was run | strong on FORTS (ensemble 0.83 at t 2.3; single N=30 reaches 1.29 and t 3.5 even with Feb–Mar 2022 removed; the window shape replicates across two FORTS samples at rank correlation **+0.90**) — and absent on crypto (rank correlation **−0.12 / +0.03**, vol-scaled long beats all nine windows on 16 perps); the pre-declared crypto threshold was missed | it worked on one market in one regime, not as a general trend premium; on the only venue I can trade it is a diversifier (alpha 0.58–0.78 at ~zero correlation to long), not income — about 7%/yr at 10% vol |
+| **Trend following on dailies** (time-series momentum, vol-targeted, weekly rebalance) | Binance perps 2020–2026 with funding; stooq 2017–2026; all 9 liquid FORTS families 2019–2026 | pre-declared rule; window map 30–300 on both markets; costs stressed up to ×50; top-5 days cut from the benchmark as well; a pass/fail threshold for the crypto re-test written down before it was run | strong on FORTS (ensemble 0.83 at t 2.3; single N=30 reaches 1.29, and 1.34 at t 3.5 with Feb–Mar 2022 removed; the window shape replicates across two FORTS samples at rank correlation **+0.90**) — and absent on crypto (rank correlation **−0.12 / +0.03**, vol-scaled long beats all nine windows on 16 perps); the pre-declared crypto threshold was missed | it worked on one market in one regime, not as a general trend premium; on the only venue I can trade it is a diversifier (alpha 0.58–0.78 at ~zero correlation to long), not income — about 7%/yr at 10% vol |
 | **Funding carry** (spot long + perp short) | Binance funding history 2019–2026, 16 majors | by year | BTC averaged +11.6%/yr (2021: +31%, 2022: +4%, 2026 YTD: +2%); worst funding drawdown −1.5% | real but regime-dependent; ≈ 0 in the current regime |
 | **Extreme-funding spike arbitrage on small perps** (the one edge where small capital has an advantage) | **658 perps, 364 hedgeable**, full funding history 2019–2026 | pre-declared episode rule (enter after 3 payments ≥ 100%/yr, exit < 30%, 50 bp/episode), capital-constrained simulation, optimistic-entry bound | 1,125 episodes, 58% profitable; **2021: +1,000% of notional summed** (IOTA/TRB/ANKR +14–15% per 3-week episode), 2024 burst; **2023, 2025, 2026: negative** even with optimistic entry at any threshold | since 2023 funding settles every 4 h instead of 8, episodes last 0.5 days instead of 3 — bots harvest the spike within one or two payments |
 
@@ -51,7 +51,7 @@ Details and worked examples: [docs/FINDINGS.md § 5](docs/FINDINGS.md), [docs/RE
 
 ## Infrastructure
 
-Everything below runs unattended on one small VPS (Docker Compose) and has been collecting since June 2026.
+Everything below runs unattended on one small VPS (Docker Compose) and has been collecting since June 2026. Snapshot of 22 September 2026: 2.05 billion rows in ClickHouse after 109 days of collection, 8.3 GiB on disk (order-book snapshots compress 8×, trades 2.9×), about 80 MB a day on average.
 
 | Component | What it does |
 |---|---|
@@ -71,18 +71,21 @@ Stack: Python 3.9, pandas/numpy only (no heavy dependencies), ClickHouse, Docker
 
 ## Reproduce the public-data results (no keys needed)
 
+Binance does not serve every country: from a US IP address its API answers HTTP 451, and the Binance downloads below fail. The MOEX block does not touch Binance; the outputs of the funding scan are already in [results/](results/), and the crypto trend tables are in the [trend write-up](posts/2026-09-trend-daily.md) (RU).
+
 ```bash
 pip install -r requirements.txt
 
-# Extreme-funding scan over all Binance USDT perps (≈ 20 min download, then seconds)
-python funding_scan.py --fetch --scan --confirm 3
+# Daily trend rule on all nine MOEX futures families (MOEX ISS, free);
+# on data to 18 Sep 2026 it gave the ensemble 0.83 at t 2.3 (results/trend_daily_*.csv)
+python fetch_daily.py --moex && python trend_daily.py --source moex
 
-# Daily trend rule on Binance perps with funding (≈ 5 min download)
+# The same rule on Binance perps with funding (≈ 5 min download)
 python fetch_daily.py --binance && python trend_daily.py --source crypto --exchange binance
 python trend_daily.py --source crypto --exchange binance --top 4 --long-spot
 
-# Same rule on MOEX futures as an out-of-sample control (MOEX ISS, free)
-python fetch_daily.py --moex && python trend_daily.py --source moex
+# Extreme-funding scan over all Binance USDT perps (≈ 20 min download, then seconds)
+python funding_scan.py --fetch --scan --confirm 3
 ```
 
 The collector needs a server with Docker: `cd collector && docker compose up -d` (set `CLICKHOUSE_PASSWORD`; `SYMBOLS` in `docker-compose.yml`). Deployment helpers read `COLLECTOR_HOST` and `COLLECTOR_KEY` from the environment. Operations runbook (RU): [docs/RUNBOOK.md](docs/RUNBOOK.md).
