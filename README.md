@@ -105,4 +105,4 @@ The collector needs a server with Docker: `cd collector && docker compose up -d`
 
 Independent project by [@stooq1](https://github.com/stooq1), June–September 2026. The research questions came from a trader's notebook ("conductors", "walls", "the spring", round levels); the discipline came from getting burned by every one of them in a backtest. Large parts of the code and the journal were written with AI assistants (DeepSeek, Claude); every number in the tables was produced by the scripts in this repository and can be regenerated.
 
-I am open to quant-developer and market-data-engineering work — collectors, ClickHouse pipelines, honest backtest reviews. Open an issue, or write to the Telegram channel [t.me/strategy_graveyard](https://t.me/strategy_graveyard).
+I am open to quant-developer and market-data-engineering work: collectors, ClickHouse pipelines, honest backtest reviews. Email [mail@stooq1.com](mailto:mail@stooq1.com) or open an issue. More at [stooq1.com](https://stooq1.com).
