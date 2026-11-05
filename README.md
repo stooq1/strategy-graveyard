@@ -2,7 +2,7 @@
 
 **Honest tests of retail trading edges on crypto perpetuals and MOEX futures — with the infrastructure that produced them.**
 
-Russian version: [README.ru.md](README.ru.md) · Research journal (RU): [docs/FINDINGS.md](docs/FINDINGS.md), [docs/REVIEW.md](docs/REVIEW.md) · Write-ups: [posts/](posts/) · Telegram (RU): [t.me/strategy_graveyard](https://t.me/strategy_graveyard)
+Russian version: [README.ru.md](README.ru.md) · Research journal (RU): [docs/FINDINGS.md](docs/FINDINGS.md), [docs/REVIEW.md](docs/REVIEW.md) · Write-ups: [posts/](posts/)
 
 This repository is a four-month independent research project (June–September 2026) that set out to find a tradeable edge in market microstructure and cross-market lead-lag, and instead produced something rarer: a set of *negative results that can be trusted*. Every popular retail idea below was implemented, run through an event study, a walk-forward backtest with realistic costs, and a concentration test — and closed with a number, not an opinion.
 
