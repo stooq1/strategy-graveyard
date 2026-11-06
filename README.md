@@ -97,7 +97,7 @@ The collector needs a server with Docker: `cd collector && docker compose up -d`
 - [Extreme funding on small perps: the edge that died in 2023 — 658 perpetuals, 1,125 episodes](posts/2026-09-funding-spikes.en.md) ([RU](posts/2026-09-funding-spikes.md)) — also on [dev.to](https://dev.to/stooq1/i-tested-harvest-extreme-funding-on-small-perps-on-all-658-binance-perpetuals-it-died-in-2023-46mh)
 - [S&P 500 → RTS futures: what is left of the 2020 conductor effect in 2026](posts/2026-09-conductor-sp500-ri.md) (RU)
 - [Trend following on dailies, crypto and FORTS: a crash hedge, not an income](posts/2026-09-trend-daily.md) (RU)
-- [I wrote down the pass mark before the test. Then I failed it.](posts/2026-09-prediction-before-the-test.md) (RU) · EN on [dev.to](https://dev.to/stooq1/i-wrote-down-the-pass-mark-before-the-test-then-i-failed-it-4a03)
+- [I wrote down the pass mark before the test. Then I failed it.](posts/2026-09-prediction-before-the-test.md) (RU)
 
 ---
 
