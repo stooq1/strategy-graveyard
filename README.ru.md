@@ -97,7 +97,7 @@ python funding_scan.py --fetch --scan --confirm 3
 - [Экстремальный фандинг на мелких перпах: край, который умер в 2023 — 658 перпов, 1125 эпизодов](posts/2026-09-funding-spikes.md) ([EN](posts/2026-09-funding-spikes.en.md)) — также на [dev.to](https://dev.to/stooq1/i-tested-harvest-extreme-funding-on-small-perps-on-all-658-binance-perpetuals-it-died-in-2023-46mh)
 - [S&P 500 → фьючерс RTS: что осталось от эффекта проводника 2020 года в 2026](posts/2026-09-conductor-sp500-ri.md)
 - [Тренд на дневках, крипта и FORTS: страховка от обвала, а не доход](posts/2026-09-trend-daily.md)
-- [Порог, записанный до теста, и как он не был взят](posts/2026-09-prediction-before-the-test.md) · EN на [dev.to](https://dev.to/stooq1/i-wrote-down-the-pass-mark-before-the-test-then-i-failed-it-4a03)
+- [Порог, записанный до теста, и как он не был взят](posts/2026-09-prediction-before-the-test.md)
 
 ---
 
